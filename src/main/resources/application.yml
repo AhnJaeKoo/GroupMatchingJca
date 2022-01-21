@@ -1,0 +1,4 @@
+spring:
+  devtools:
+    livereload:
+      enabled: false #이클립스에서 여러개 boot 띄우면 간섭경고 발생. 서로간 간섭 안하기 위해  

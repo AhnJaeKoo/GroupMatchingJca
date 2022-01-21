@@ -1,0 +1,13 @@
+           <model>
+                     <qa_id>${map.qaId}</qa_id>
+                     <model_no>${map.modelNo}</model_no>
+                     <model_nm><![CDATA[${map.modelNm}]]></model_nm>
+                     <cnd_nm><![CDATA[${map.cndNm}]]></cnd_nm>
+                     <mkr_id>${map.mkrId}</mkr_id>
+                     <brnd_id>${map.brndId}</brnd_id>
+                     <category>${map.chgCateCd}</category>
+                     <standard>${map.dnVolume}</standard>
+                     <amount>${map.dnQnt}</amount>
+                     <change>${map.dnCpVlu}</change>
+                     <unit><![CDATA[${map.dnCpUnt}]]></unit>
+           </model>

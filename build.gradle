@@ -1,0 +1,136 @@
+plugins {
+	id 'org.springframework.boot' version '2.5.0'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
+	id 'java'
+	id 'war'
+}
+
+group = 'com.enuri.gm.jca'
+//version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '15'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+	maven { url 'https://repo.spring.io/snapshot' }
+	maven { url 'https://repo.spring.io/milestone' }
+	jcenter()
+	maven { url 'http://192.168.213.82:8083/nexus/content/groups/public/' }
+}
+
+ext {
+	set('springCloudVersion', "2020.0.3-SNAPSHOT")
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
+
+dependencies {
+	// spring boot
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude module: 'junit'	// 기본적으로 junit4에 의존성을 가지므로
+    }
+
+	implementation 'com.github.ben-manes.caffeine:caffeine:3.0.2'	//카페인 캐시 사용
+	//implementation 'org.springframework.cloud:spring-cloud-starter-netflix-hystrix:2.2.8.RELEASE'	// 더이상 개발안하고 유지보수만 한다고 넷플릭스에서 발표함..그래서 resilience4j로 대체함
+
+	// spring cloud
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+	implementation 'io.github.resilience4j:resilience4j-all:1.7.0'
+	implementation 'org.springframework.cloud:spring-cloud-config-client'	//cloud client
+	implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'	//bootstrap.yml 지원이 중단되어 di해줌 2.4.3 / 2020.0.1
+
+	//jpa
+	implementation 'org.hibernate:hibernate-entitymanager:5.4.29.Final'
+	implementation 'com.querydsl:querydsl-jpa'
+	implementation 'com.querydsl:querydsl-core'
+	implementation 'com.querydsl:querydsl-apt'
+	implementation 'com.querydsl:querydsl-sql:4.4.0' 	// SQL 문법 사용가능(SQLExpressions)
+
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	runtimeOnly 'com.oracle.database.jdbc:ojdbc8'
+	runtimeOnly 'com.oracle.database.nls:orai18n'
+	implementation 'org.json:json:20210307'
+	//implementation 'com.googlecode.json-simple:json-simple:1.1.1'	// json
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.4'	// jackson
+
+	//jsp
+	compile('org.apache.tomcat.embed:tomcat-embed-jasper')
+	compile('javax.servlet:jstl:1.2')
+
+	// template engine
+	compile 'org.apache.velocity:velocity:1.7'
+
+	annotationProcessor("jakarta.persistence:jakarta.persistence-api") // java.lang.NoClassDefFoundError(javax.annotation.Entity) 발생 대응
+    annotationProcessor("jakarta.annotation:jakarta.annotation-api") // java.lang.NoClassDefFoundError (javax.annotation.Generated) 발생 대응
+
+    // junit
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.7.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.0'
+
+	compile 'com.enuri.gm.common:groupmatching-common:1.5.20220114.135607-SNAPSHOT'
+}
+
+// 망할 javax.servlet
+configurations {
+    provided.all*.exclude group: 'javax.servlet'
+}
+
+// querydsl 적용 - build의 classes로 생성됨
+//def querydslDir = "$buildDir/generated/querydsl"
+def querydslDir = "src/main/generated"
+
+querydsl {
+  jpa = true
+  querydslSourcesDir = querydslDir
+}
+
+sourceSets {
+    main.java.srcDirs = ['src/main/java', querydslDir]
+}
+
+configurations {
+  querydsl.extendsFrom compileClasspath
+}
+
+compileQuerydsl {
+  options.annotationProcessorPath = configurations.querydsl
+}
+
+//test task 시 jvm argument 주입 (log.properties)
+test {
+	println "**** OS : " + System.properties['os.name']
+
+	if (System.properties['os.name'].toLowerCase().contains('windows')) {
+        jvmArgs '-Dlog.properties=C:/eclipse/workspace/GroupMatchingJca/conf/log.properties'
+    } else {
+    	jvmArgs '-Dlog.properties=/data/groupMatching/GmJca/conf/log.properties'
+    }
+}
