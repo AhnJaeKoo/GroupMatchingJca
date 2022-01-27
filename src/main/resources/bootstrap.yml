@@ -1,7 +1,7 @@
 spring:
   application:
     name: gmJca # 저장소에서 가져올 yml 파일명
-  cloud:    config:      enabled: true       uri:      - http://192.168.213.82:8084/conf
+  cloud:    config:      enabled: true       uri:      - http:///conf
       fail-fast: true # config server 연결#  main:#    allow-bean-definition-overriding: true
 
   #redis cache    
