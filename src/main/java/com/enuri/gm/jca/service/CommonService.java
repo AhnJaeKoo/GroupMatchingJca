@@ -50,7 +50,7 @@ public class CommonService {
 		StringBuffer strbuff = new StringBuffer();
 		String result = "";
 		BufferedReader buffer = null;
-		String urlAddress = "http://100.100.100.198:8080/jca_common/jca_jsp/GetCategory.jsp?cate=" + cateCode;
+		String urlAddress = "http://:8080/jca_common/jca_jsp/GetCategory.jsp?cate=" + cateCode;
 
 		try {
 			URL url = new URL(urlAddress); // 호출할 url
